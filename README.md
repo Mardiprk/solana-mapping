@@ -1,41 +1,53 @@
-# Solana Mapping Example
+# Simple Map
 
-This project demonstrates a simple Solana smart contract (program) using [Anchor](https://book.anchor-lang.com/). It allows users to initialize an account and store a single `u64` value, which can later be updated by the account's authority.
+A minimal Solana program that demonstrates basic data storage using Program Derived Addresses (PDAs). Each user can store and update a single `u64` value on-chain.
 
 ## Features
-- Initialize a user account with a value
-- Update the value (only by the account authority)
-- Built with Anchor framework
 
-## How it Works
-
-```mermaid
-%% Diagram: User interacts with Solana program to store and update data
----
-graph TD;
-  A["User"] -->|"Initialize Account"| B["Solana Program (simple_map)"];
-  B -->|"Stores Data & Authority"| C["UserAccount PDA"];
-  A -->|"Set New Value"| B;
-  B -->|"Updates Data if Authorized"| C;
-  C -->|"Holds: authority, data (u64)"| D["Solana Blockchain"];
-```
+- Initialize a personal account with a value
+- Update stored value (authority-protected)
+- Uses PDA for deterministic account addressing
 
 ## Quick Start
 
-1. Install dependencies:
-   ```bash
-   yarn install
-   ```
-2. Build and test:
-   ```bash
-   anchor test
-   ```
+```bash
+# Install dependencies
+yarn install
 
-## Project Structure
-- `programs/solana-mapping/` - Solana program source code (Rust)
-- `tests/` - Integration tests (TypeScript)
-- `migrations/` - Deployment scripts
+# Run tests
+anchor test
+```
+
+## How it Works
+
+The program creates a PDA for each user using the seed `["user", authority.key()]`. Only the account authority can update the stored value.
+
+```rust
+// Initialize with a value
+pub fn initialize(ctx: Context<Initialize>, data: u64) -> Result<()>
+
+// Update the value (authority required)
+pub fn set(ctx: Context<Set>, new_value: u64) -> Result<()>
+```
+
+## Account Structure
+
+```rust
+#[account]
+pub struct UserAccount {
+    pub authority: Pubkey,  // 32 bytes
+    pub data: u64,          // 8 bytes
+}
+```
+
+## Test Output
+
+```
+📦 PDA: 8zy2dNPzUPX3kiqRAbBF4YZV3gvzoijmHbvyByM77rrb
+✅ Stored Data: 23
+🔁 Updated Value: 99
+```
 
 ---
 
-*Created with ❤️ using Anchor on Solana.* 
+*Built with Anchor on Solana*
